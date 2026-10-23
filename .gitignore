@@ -1,0 +1,23 @@
+# Secrets and local configuration
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
+*password*
+*credentials*
+wazuh-install-files.tar
+
+# Logs and data exports may contain sensitive information
+*.log
+*.jsonl
+*.csv
+exports/
+logs/
+
+# Local/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
