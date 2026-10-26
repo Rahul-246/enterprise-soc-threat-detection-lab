@@ -1,77 +1,94 @@
-# Enterprise SOC Lab: Threat Detection & Incident Response
+# Enterprise SOC Threat Detection Lab — Wazuh
 
-A hands-on home lab built with Wazuh to practice endpoint monitoring, security-event investigation, and incident documentation.
+A hands-on Security Operations Center (SOC) lab demonstrating endpoint monitoring, custom detection engineering, File Integrity Monitoring (FIM), alert validation, and L1 analyst triage using Wazuh.
 
-> **Status:** Initial lab validation completed by the author. Add your own screenshots and exact event metadata before publishing.
-> **Environment:** VMware Workstation, Ubuntu Server 24.04 LTS, Wazuh all-in-one server, Ubuntu endpoint with Wazuh Agent.
+## Project Overview
 
-## Objectives
+This project simulates selected security monitoring scenarios in a controlled Ubuntu environment. It demonstrates how endpoint events are collected, evaluated against detection rules, displayed as SIEM alerts, and reviewed using a structured analyst workflow.
 
-- Deploy a Wazuh Manager, Indexer, and Dashboard.
-- Enroll a Linux endpoint with the Wazuh Agent.
-- Generate controlled SSH authentication failures on a system owned by the lab operator.
-- Verify event visibility and investigate the corresponding Wazuh event.
-- Document evidence, findings, limitations, and defensive recommendations.
+**Environment:** Wazuh 4.14.9, Ubuntu endpoint, Wazuh Manager, Wazuh Indexer, and Wazuh Dashboard.
+
+## Validated Detection Results
+
+| Use case | Wazuh rule | Severity | Result |
+|---|---|---|---|
+| Repeated SSH authentication failures | `100100` — custom | Level 10 | Triggered during controlled testing |
+| File modification | `550` | Level 7 | Alert verified |
+| File deletion | `553` | Level 7 | Alert verified |
+
+The custom SSH rule correlates five matching events from the same source IP within 120 seconds. During the test, the source IP was `127.0.0.1` and the username was `invalid_soc_user`. This was a local lab simulation, not evidence of an external attack.
 
 ## Architecture
 
-See [`architecture/lab-architecture.md`](architecture/lab-architecture.md).
-
-## Lab components
-
-| Component | Role |
-|---|---|
-| VM1 — Wazuh Server | Manager, Indexer, Dashboard |
-| VM2 — Ubuntu Endpoint | Wazuh Agent and local authentication logs |
-| Windows host | Browser-based dashboard access, screenshots, documentation |
-
-## Validation status
-
-The following checks were reported as passing during lab setup:
-
-- Wazuh Manager, Indexer, and Dashboard services active.
-- Wazuh Agent service running on the endpoint.
-- Agent `ubuntu-endpoint-01` shown as Active in the dashboard.
-- SSH test event visible in Wazuh Threat Hunting.
-
-Before publishing, attach your own screenshots and replace placeholders in the investigation report with the exact values from the event details.
-
-## Repository structure
-
-```text
-.
-├── README.md
-├── architecture/
-│   └── lab-architecture.md
-├── detection-rules/
-│   └── README.md
-├── incident-reports/
-│   └── ssh-failed-login-investigation.md
-└── screenshots/
-    └── README.md
+```mermaid id="p9c1xa"
+flowchart TD
+    A[Ubuntu Endpoint] --> B[Wazuh Agent]
+    B --> C[Wazuh Manager]
+    C --> D[Detection Rules]
+    D --> E[Wazuh Indexer]
+    E --> F[Wazuh Dashboard]
+    F --> G[SOC Analyst Triage]
 ```
 
-## Evidence checklist
+## Evidence
 
-- [ ] `01-wazuh-dashboard.png`
-- [ ] `02-wazuh-services.png`
-- [ ] `03-agent-connected.png`
-- [ ] `04-ssh-detection.png`
-- [ ] Exact event timestamp, rule ID, rule description, severity, and source IP (if present)
-- [ ] Detection behavior validated with repeatable test events
+The screenshots below should be stored in the repository's evidence folder. Adjust these paths to match the filenames you actually uploaded.
 
-## Safety and privacy
+### SSH Authentication Detection
 
-- Only test against systems you own or are explicitly authorized to assess.
-- This repository documents a controlled lab simulation, not a real-world intrusion.
-- Never commit passwords, tokens, private keys, enrollment credentials, or sensitive logs.
-- Review screenshots for secrets, personal information, and unnecessary network details before publishing.
-- Do not claim custom detection engineering or MITRE ATT&CK mapping unless you have implemented and verified it.
+![Wazuh SSH detection alert](evidence/ssh-detection.png)
 
-## Next improvements
+Custom rule `100100` generated a Level 10 alert during the controlled authentication-failure test.
 
-1. Add event screenshots and exact metadata.
-2. Verify the relevant rule and event classification.
-3. Develop a custom detection rule only if the existing detection does not meet the lab objective.
-4. Test the rule against positive and negative cases.
-5. Add a repeatable test procedure and lessons learned.
+### File Integrity Monitoring — Modification
+
+![Wazuh FIM modification alert](evidence/fim-file-modification.png)
+
+Rule `550` reported an integrity checksum change in the monitored test directory.
+
+### File Integrity Monitoring — Deletion
+
+![Wazuh FIM deletion alert](evidence/fim-file-deletion.png)
+
+Rule `553` reported file deletion in the monitored test directory.
+
+## Documentation
+
+- [Architecture and data flow](docs/architecture.md)
+- [SSH detection incident report](docs/incident-report-ssh.md)
+- [File Integrity Monitoring incident report](docs/incident-report-fim.md)
+- [SOC Analyst L1 triage playbook](docs/triage-playbook.md)
+- [Detection validation matrix](docs/validation-matrix.md)
+- [Custom SSH detection rule](rules/local_rules.xml)
+
+## Key Skills Demonstrated
+
+- Wazuh SIEM monitoring and service-health checks
+- Ubuntu endpoint agent configuration
+- Custom XML detection-rule configuration
+- Authentication-failure correlation
+- File Integrity Monitoring
+- Alert investigation and evidence documentation
+- MITRE ATT&CK technique mapping
+- SOC L1 triage and escalation workflow
+
+## Scope and Limitations
+
+This project validates selected detection scenarios in a controlled learning environment. It does not claim comprehensive detection coverage, successful attacker compromise, automated containment, or production-grade incident response.
+
+The observed SSH test source was local (`127.0.0.1`). Alert severity alone is not proof of malicious activity; analyst review and event correlation remain necessary.
+
+## Reproduction Notes
+
+1. Deploy Wazuh Manager, Indexer, Dashboard, and an enrolled Ubuntu agent in an isolated lab.
+2. Configure and validate the custom SSH correlation rule in the appropriate Wazuh rules configuration.
+3. Enable FIM monitoring for a dedicated test directory.
+4. Generate controlled authentication-failure, file-modification, and file-deletion events.
+5. Review the resulting alerts in Wazuh Dashboard.
+6. Document observations, limitations, and relevant evidence.
+
+Validate custom rules against the installed Wazuh version before reuse. Do not expose management interfaces to the public internet or commit credentials and secrets.
+
+## Author
+
+Rahul Saxena
